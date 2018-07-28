@@ -1,0 +1,9 @@
+pymongo
+twisted
+redis
+lxml
+beautifulsoup4
+pysocks
+pycrypto
+requests>=2.11.1
+msgpack-python

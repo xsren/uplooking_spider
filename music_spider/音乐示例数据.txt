@@ -1,0 +1,160 @@
+song 歌曲
+album 专辑
+singer 歌手
+playlist 歌单
+
+其中 song、album、singer可以通过外键一一对应起来。
+一个singer有多个album，一个album有多个song。
+其中一个album可以对应多个歌手，一个song只能对应一个album。
+
+song
+{
+    "url" : "https://y.qq.com/n/yqq/song/000NpZav0rKBrE.html",
+    "mus_Time" : 210,
+    "mid" : "000NpZav0rKBrE",
+    "mus_Lyric" : "朋友不知此时你在那儿呀&#10;&#32;也不知此刻你有没有想念家乡&#10;&#32;在思念故乡的那一刻呀&#10;&#32;有没有也想起了朋友喔&#10;&#10;&#32;去年大雪纷飞的时候&#10;&#32;我俩一起在街上喝着美酒&#10;&#32;你说咱们人们啊&#10;&#32;总是你骗我我骗你的&#10;&#10;&#32;哦&#32;朋友&#32;哦&#32;想你啦",
+    "album_url" : "https://y.qq.com/n/yqq/album/002NxmGl0vKmjl.html",
+    "album_mid" : "002NxmGl0vKmjl",
+    "mus_Name" : "鹊鹁",
+    "mus_Album" : "鹊鹁",
+    "mus_Singer" : [
+        {
+            "name" : "阿木",
+            "mid" : "004fDJTb3uhyNQ"
+        }
+    ]
+}
+
+album
+{
+    "album_Type" : "Single",
+    "album_Name" : "替身",
+    "album_Genre" : "Pop 流行",
+    "url" : "https://y.qq.com/n/yqq/album/001YbkjH3Pr6fI.html",
+    "mid" : "001YbkjH3Pr6fI",
+    "sing_mid" : "004fDJTb3uhyNQ",
+    "album_Company" : "深圳市华音世纪文化传播有限公司",
+    "album_Cover" : "https://y.gtimg.cn/music/photo_new/T002R300x300M000001YbkjH3Pr6fI.jpg",
+    "album_Pub_Time" : "2015-05-13",
+    "album_lan" : "国语",
+    "sing_url" : "https://y.qq.com/n/yqq/singer/004fDJTb3uhyNQ.html",
+    "album_Singr" : "阿木",
+    "album_Summary" : "      有时候，我们觉得彼此陌生又太熟悉，有时候，我们觉得彼此太亲近又太疏远，有时候我们爱一个人，到最后才知道是为了另一个人，有时候我们被一个人爱，到最后才知道是做了别人的影子，爱情也许是这个世界上最经不起考验的情感，当爱已远逝，苦苦追问也是惘然。阿木，继《是爱还是折磨》之后，再次演绎孽恋之歌，单曲《替身》虐心发布，中凰音乐Willen操刀制作，把爱的卑屈，与被爱的无情，用简单的和弦、朴实的声线、时而浅吟的控诉、时而高亢的呐喊表现的淋漓尽致。"
+}
+
+singer
+{
+    "_id" : ObjectId("590d605d6dd030225e22b6f3"),
+    "singr_Type" : "华语男",
+    "singr_Name" : "阿木",
+    "singr_Birthday" : "1976-05-02",
+    "url" : "https://y.qq.com/n/yqq/singer/004fDJTb3uhyNQ.html",
+    "singr_Station" : "中国",
+    "mid" : "004fDJTb3uhyNQ",
+    "singr_Gender" : "man",
+    "singr_MainWorks" : "《有一种爱叫做放手》",
+    "singr_Summary" : "阿木，是个会唱歌的好男人。他会以穿云裂石的高音显示着男人的力量和雄心，他还会以古典的专一、怀旧与深情款款来表现他温柔的一面。动人高音由低回至呐喊丝毫也不乔装煽情，而是字字真切，直动人心，唱尽天下有情人的为爱疼痛，将感动从血液中声声唤醒。磅礴的曲式尽展大气，钢琴如泣如诉，吉他深情翻滚。更甚者《有一种爱叫做放手》原创专辑灵魂主打感动中国，感动彩铃的深情恋曲。近年原创歌坛罕见的融理性和感性于一炉，深入爱情本质与人性角度从而创造出哲理性情歌二元论的深情恋曲，深情跌宕的旋律紧扣丝丝哲理的歌词。",
+    "singr_Nationality" : "中国",
+    "singr_Img" : "https://y.gtimg.cn/music/photo_new/T001R300x300M000004fDJTb3uhyNQ.jpg"
+}
+
+playlist
+{
+    "playlist_Cover" : "http://p.qpic.cn/music_cover/7ZzYAOtOGdVTpEteL47DOZ4GYS26JPicE8j4OMNJcicicaLL6BP1k4o2g/300?n=1",
+    "playlist_Tag" : [
+        "古典",
+        "开车"
+    ],
+    "url" : "https://y.qq.com/n/yqq/playlist/2057677983.html",
+    "playlist_Mus_List" : [
+        {
+            "url" : "https://y.qq.com/n/yqq/song/002KIgmm4FLI3e.html",
+            "name" : "Chopin : Ballade No.4 In F Minor Op.52",
+            "mid" : "002KIgmm4FLI3e"
+        },
+        {
+            "url" : "https://y.qq.com/n/yqq/song/004BSkzP1UTmId.html",
+            "name" : "Mozart: Piano Sonata No. 16 in C  Major, K. 545, \"Sonata Facile\": I. Allegro",
+            "mid" : "004BSkzP1UTmId"
+        },
+        {
+            "url" : "https://y.qq.com/n/yqq/song/003FXkqE39r15l.html",
+            "name" : "Sonata In E-Flat Major, BWV 1031, For Flute And Obbligato Harpsichord - 1. Allegro Moderato",
+            "mid" : "003FXkqE39r15l"
+        },
+        {
+            "url" : "https://y.qq.com/n/yqq/song/000NGVax4YNE1l.html",
+            "name" : "Chamber Concerto in D major, RV 93 - II. Largo (D大调曼陀林协奏曲 RV 93",
+            "mid" : "000NGVax4YNE1l"
+        },
+        {
+            "url" : "https://y.qq.com/n/yqq/song/003lZble0608GX.html",
+            "name" : "Mozart: Piano Quartet in G minor K.478: III. Rondo",
+            "mid" : "003lZble0608GX"
+        },
+        {
+            "url" : "https://y.qq.com/n/yqq/song/002LUqgW1CeQCc.html",
+            "name" : "Ave Maria",
+            "mid" : "002LUqgW1CeQCc"
+        },
+        {
+            "url" : "https://y.qq.com/n/yqq/song/003Y9Kf62pxR9e.html",
+            "name" : "海顿小夜曲",
+            "mid" : "003Y9Kf62pxR9e"
+        },
+        {
+            "url" : "https://y.qq.com/n/yqq/song/001iZ9bV26FCFk.html",
+            "name" : "Lied ohne Worte, Op. 109 (无言歌，作品109",
+            "mid" : "001iZ9bV26FCFk"
+        },
+        {
+            "url" : "https://y.qq.com/n/yqq/song/001QmKpw1Lwz1u.html",
+            "name" : "Piano Sonata No. 14 in C-Sharp Minor, Op. 27 No. 2 \"Moonlight\" - II. Allegretto (升C小调第14号钢琴奏鸣曲，作品27之2“月光” - 第二乐章 小快板",
+            "mid" : "001QmKpw1Lwz1u"
+        },
+        {
+            "url" : "https://y.qq.com/n/yqq/song/00238Z8J1BgyQG.html",
+            "name" : "\"Ah mes amis - Pour mon ame\"",
+            "mid" : "00238Z8J1BgyQG"
+        },
+        {
+            "url" : "https://y.qq.com/n/yqq/song/003WBuVy0e24U9.html",
+            "name" : "Waltz in A-Flat, Op. 39, No. 15",
+            "mid" : "003WBuVy0e24U9"
+        },
+        {
+            "url" : "https://y.qq.com/n/yqq/song/0036HN6M3ZChyF.html",
+            "name" : "Impromptu en Fa Mayor (F大调即兴曲",
+            "mid" : "0036HN6M3ZChyF"
+        },
+        {
+            "url" : "https://y.qq.com/n/yqq/song/004JuKbI0uRYCC.html",
+            "name" : "幽默曲",
+            "mid" : "004JuKbI0uRYCC"
+        },
+        {
+            "url" : "https://y.qq.com/n/yqq/song/000aed7J2llbmQ.html",
+            "name" : "Moments Musicaux, D. 780 - III. in F Minor (音乐瞬间，作品780 - 第三乐章 F小调",
+            "mid" : "000aed7J2llbmQ"
+        },
+        {
+            "url" : "https://y.qq.com/n/yqq/song/003GgnBN1fcfwe.html",
+            "name" : "Brandenburg Concerto No. 4 in G Major, BWV 1049: I. Allegro",
+            "mid" : "003GgnBN1fcfwe"
+        },
+        {
+            "url" : "https://y.qq.com/n/yqq/song/0047fATR0DSmuV.html",
+            "name" : "Symphony No. 40 in G Minor, K550: Allegro Molto",
+            "mid" : "0047fATR0DSmuV"
+        },
+        {
+            "url" : "https://y.qq.com/n/yqq/song/003kWBCt2jp234.html",
+            "name" : "Act Secondo - Vi ricorda, o bosch'ombrosi",
+            "mid" : "003kWBCt2jp234"
+        }
+    ],
+    "playlist_Editor" : "艺珺",
+    "playlist_Name" : "陪你一起堵在路上的古典音乐",
+    "dissid" : "2057677983",
+    "playlist_Summary" : "提到堵车，估计大家都会觉得头皮发麻！内心焦躁不安想要前进，现实却是安安分分待在车里，你在出租车上堵起，我在公交车上堵起，他在自家车上堵起，堵起堵起，到处堵起！听着谢帝轻松诙谐的《堵起》倒也缓解了几分焦虑，不过，陪你堵起的可不止谢帝哦，还有我们舒缓焦虑情绪的法宝—古典音乐！"
+}

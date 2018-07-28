@@ -1,0 +1,8 @@
+msgpack
+twisted
+pymongo
+flask
+requests
+gunicorn
+gevent
+xmljson
