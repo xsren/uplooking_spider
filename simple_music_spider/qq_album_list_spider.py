@@ -50,10 +50,6 @@ def crawl_album_list(page, area):
 
         if not db['album_task'].find_one({'url': album_task['url']}):
             db['album_task'].insert_one(album_task)
-        # print(album_task)
-
-    # if len(album_tasks) > 0:
-    #     self.sock.put_task(self.dbName, "%s_album_tasks" % self.siteName, album_tasks)
     return has_next_page
 
 
