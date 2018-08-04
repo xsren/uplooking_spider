@@ -1,6 +1,7 @@
 # coding:utf8
 import copy
 import json
+import time
 
 import requests
 from pymongo import MongoClient
@@ -18,7 +19,7 @@ db.authenticate(uname, passwd)
 def crawl_song(_url):
     """
     抓取歌曲详情和歌词
-    :param url:
+    :param _url:
     :return:
     """
 
@@ -80,6 +81,44 @@ def crawl_song(_url):
     }
     return song
 
+
+def crawl_singer(_url):
+    """
+
+    :param _url:
+    :return:
+    """
+    singermid = _url.split('/')[-1].split('.')[0]
+    _t = int(time.time() * 1000)
+    path = '/splcloud/fcgi-bin/fcg_get_singer_desc.fcg?singermid={}&utf8=1&outCharset=utf-8&format=xml&r={}'.format(
+        singermid, _t)
+
+    headers = {
+        'method': 'GET',
+        'authority': 'c.y.qq.com',
+        'scheme': 'https',
+        'path': path,
+        'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/67.0.3396.99 Safari/537.36',
+        'accept': '*/*',
+        'referer': _url,
+        'accept-encoding': '',
+        'accept-language': 'zh,en-US;q=0.9,en;q=0.8,zh-CN;q=0.7,zh-TW;q=0.6',
+    }
+
+    url = 'https://c.y.qq.com{}'.format(_url)
+
+    res0 = requests.get(url, headers=headers)
+
+
+    return
+
+def crawl_album(self):
+    """抓取专辑"""
+    return
+
+def crawl_album_list(self):
+    """抓取专辑列表"""
+    return
 
 def run():
     urls = [
