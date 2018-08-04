@@ -1,12 +1,24 @@
 # coding:utf8
 import json
+import logging
 import re
 import time
 
 import requests
+from api_handler import get_task, insert_task, update_task
 from mongo_handler import get_db
 
 db = get_db()
+
+logging.basicConfig()
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
+
+formatter = logging.Formatter('%(name)-12s %(asctime)s %(levelname)-8s %(message)s', '%a, %d %b %Y %H:%M:%S', )
+file_handler = logging.FileHandler("qq_song.log")
+file_handler.setFormatter(formatter)
+
+logger.addHandler(file_handler)
 
 
 def crawl_album(t):
@@ -64,9 +76,7 @@ def crawl_album(t):
                     'url': 'https://y.qq.com/n/yqq/song/%s.html' % _l['songmid'],
                     'name': _l['songname'],
                 }
-                if not db['song_task'].find_one({'url': song_task['url']}):
-                    db['song_task'].insert_one(song_task)
-
+                insert_task('song_task', song_task, logger)
 
 
 
@@ -77,12 +87,12 @@ def crawl_album(t):
 
 def run():
     while True:
-        task = db['album_task'].find_and_modify({'status': 0}, {'$set': {'status': 1}})
+        task = get_task('album_task', logger)
         print(task)
 
         t0 = time.time()
         crawl_album(task)
-        db['album_task'].update_one({'url': task['url']}, {'$set': {'status': 2}})
+        update_task('album_task', task, 2, logger)
         info = "finish crawl url:%s, t_diff:%s" % (task['url'], time.time() - t0)
         print(info)
 

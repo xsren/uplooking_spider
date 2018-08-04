@@ -69,7 +69,7 @@ def run():
     """根据列表页抓取最新的专辑，可以以此来实现增量抓取歌曲"""
 
     areas = [1, 0, 3, 15, 14, 4]
-    print('start...')
+    logger.info('start...')
     for area in areas:
         page = 0
         while page <= 3:
