@@ -1,5 +1,6 @@
 # coding:utf8
 import json
+import logging
 import re
 import time
 
@@ -8,99 +9,112 @@ from mongo_handler import get_db
 
 db = get_db()
 
+logging.basicConfig()
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
 
-def crawl_song(self, t):
-    try:
-        # get song info
+formatter = logging.Formatter('%(name)-12s %(asctime)s %(levelname)-8s %(message)s', '%a, %d %b %Y %H:%M:%S',)
+file_handler = logging.FileHandler("qq_song.log")
+file_handler.setFormatter(formatter)
 
-        headers = {
-            'Accept': '*/*',
-            'Accept-Encoding': 'gzip, deflate, sdch, br',
-            'Accept-Language': 'zh-CN,zh;q=0.8',
-            'Connection': 'keep-alive',
-            'Host': 'c.y.qq.com',
-            'Referer': t['url'],
-            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.96 Safari/537.36',
-        }
+logger.addHandler(file_handler)
 
-        _url_1 = 'https://c.y.qq.com/v8/fcg-bin/fcg_play_single_song.fcg?songmid=%s&tpl=yqq_song_detail&format=jsonp&g_tk=5381&loginUin=0&hostUin=0&format=jsonp&inCharset=utf8&outCharset=utf-8&notice=0&platform=yqq&needNewCode=0' % \
-                 t['mid']
-        res_1 = self.openUrl(_url_1, headers=headers)
 
-        rj_1 = json.loads(res_1[1:-1])
-        if rj_1['code'] == 400:
-            self.logger.warning('invalid task:%s' % t['url'])
-            self.sock.change_task_status(self.dbName, "%s_song_tasks" % self.siteName,
-                                         [{'url': t['url'], 'status': common.INVALID_TASK}])
-            return
-        data = rj_1['data'][0]
 
-        song = {}
-        song['is_to_mysql'] = 0
-        song['mus_Name'] = t['name']  # 歌曲
-        song['url'] = t['url']
+
+def crawl_song(t):
+    try_times = 3
+    while try_times > 0:
+        try_times -= 1
         try:
-            song['mid'] = data['file']['media_mid']
-        except:
-            song['mid'] = t['mid']
-        song['mus_Singer'] = [{'name': s['name'], 'mid': s['mid']} for s in data['singer']]  # 歌手 是列表
+            # get song info
 
-        song['mus_Album'] = data['album']['name']  # 专辑
-        song['album_mid'] = data['album']['mid']
-        song['album_url'] = 'https://y.qq.com/n/yqq/album/%s.html' % data['album']['mid']
-        song['mus_Time'] = data['interval']  # 时长
+            headers = {
+                'Accept': '*/*',
+                'Accept-Encoding': 'gzip, deflate, sdch, br',
+                'Accept-Language': 'zh-CN,zh;q=0.8',
+                'Connection': 'keep-alive',
+                'Host': 'c.y.qq.com',
+                'Referer': t['url'],
+                'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.96 Safari/537.36',
+            }
 
-        # if data['pay']['price_album'] == 0:
-        #     song['isFree'] = 0  # 免费
-        # else:
-        #     song['isFree'] = 1  # 付费
+            _url_1 = 'https://c.y.qq.com/v8/fcg-bin/fcg_play_single_song.fcg?songmid=%s&tpl=yqq_song_detail&format=jsonp&g_tk=5381&loginUin=0&hostUin=0&format=jsonp&inCharset=utf8&outCharset=utf-8&notice=0&platform=yqq&needNewCode=0' % \
+                     t['mid']
+            res_1 = requests.get(_url_1, headers=headers).text
 
-        headers = {
-            'Accept': '*/*',
-            'Accept-Encoding': 'gzip, deflate, sdch, br',
-            'Accept-Language': 'zh-CN,zh;q=0.8',
-            'Connection': 'keep-alive',
-            'Host': 'c.y.qq.com',
-            'Referer': t['url'],
-            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.96 Safari/537.36',
-        }
-        _url_2 = 'https://c.y.qq.com/lyric/fcgi-bin/fcg_query_lyric.fcg?nobase64=1&musicid=%s&g_tk=5381&loginUin=0&hostUin=0&format=jsonp&inCharset=utf8&outCharset=utf-8&notice=0&platform=yqq&needNewCode=0' % \
-                 data['id']
+            rj_1 = json.loads(res_1[1:-1])
+            if rj_1['code'] == 400:
+                logger.warning('invalid task:%s' % t['url'])
+                db['song_task'].update_one({'url': t['url']}, {'$set': {'status': 4}})
+                return
+            data = rj_1['data'][0]
 
-        res_2 = self.openUrl(_url_2, headers=headers)
+            song = {}
+            song['is_to_mysql'] = 0
+            song['mus_Name'] = t['name']  # 歌曲
+            song['url'] = t['url']
+            try:
+                song['mid'] = data['file']['media_mid']
+            except:
+                song['mid'] = t['mid']
+            song['mus_Singer'] = [{'name': s['name'], 'mid': s['mid']} for s in data['singer']]  # 歌手 是列表
 
-        rj = json.loads(res_2.replace('MusicJsonCallback(', '').replace(')', ''))
-        if 'lyric' in rj:
-            song['mus_Lyric'] = rj['lyric']  # 歌词
-        else:
-            song['mus_Lyric'] = ''
+            song['mus_Album'] = data['album']['name']  # 专辑
+            song['album_mid'] = data['album']['mid']
+            song['album_url'] = 'https://y.qq.com/n/yqq/album/%s.html' % data['album']['mid']
+            song['mus_Time'] = data['interval']  # 时长
 
-        # put song
-        self.sock.insert_data(self.dbName, "%s_song" % self.siteName, [song])
-        self.sock.change_task_status(self.dbName, "%s_song_tasks" % self.siteName,
-                                     [{'url': t['url'], 'status': common.CRAWL_SUCCESS}])
+            headers = {
+                'Accept': '*/*',
+                'Accept-Encoding': 'gzip, deflate, sdch, br',
+                'Accept-Language': 'zh-CN,zh;q=0.8',
+                'Connection': 'keep-alive',
+                'Host': 'c.y.qq.com',
+                'Referer': t['url'],
+                'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.96 Safari/537.36',
+            }
+            _url_2 = 'https://c.y.qq.com/lyric/fcgi-bin/fcg_query_lyric.fcg?nobase64=1&musicid=%s&g_tk=5381&loginUin=0&hostUin=0&format=jsonp&inCharset=utf8&outCharset=utf-8&notice=0&platform=yqq&needNewCode=0' % \
+                     data['id']
 
+            res_2 = requests.get(_url_2, headers=headers).text
 
-    except Exception as e:
-        info = 'url:%s, error:%s' % (t['url'], str(e))
-        self.logger.warning(info)
-        # utils.send_email(info,attach=res)
-        self.sock.change_task_status(self.dbName, "%s_song_tasks" % self.siteName,
-                                     [{'url': t['url'], 'status': common.CRAWL_FAIL}])
-        self.init_session()
+            rj = json.loads(res_2.replace('MusicJsonCallback(', '').replace(')', ''))
+            if 'lyric' in rj:
+                song['mus_Lyric'] = rj['lyric']  # 歌词
+            else:
+                song['mus_Lyric'] = ''
+
+            if not db['song_info'].find_one({'url': song['url']}):
+                db['song_info'].insert_one(song)
+            db['song_task'].update_one({'url': t['url']}, {'$set': {'status': 2}})
+            return
+        except Exception as e:
+            info = 'url:%s, error:%s' % (t['url'], str(e))
+            logger.info(info)
+            logger.exception(e)
+            time.sleep(1)
+
+    db['song_task'].update_one({'url': t['url']}, {'$set': {'status': 3}})
+
 
 def run():
     while True:
-        ts = self.sock.get_task(self.dbName, "%s_song_tasks" % self.siteName)['data']
-        if len(ts) == 0:
-            self.logger.warning('no task to crawl ......')
-            return
-        for t in ts:
+        try:
+            task = db['song_task'].find_and_modify({'status': 0}, {'$set': {'status': 1}})
+
+            if not task:
+                logger.info('finish crawl all task')
+                return
+
+
             t0 = time.time()
-            self.__crawl_song(t)
-            info = "finish crawl url:%s, t_diff:%s" % (t['url'], time.time() - t0)
-            self.logger.info(info)
-            self.count += 1
+            crawl_song(task)
+            info = "finish crawl url:%s, t_diff:%s" % (task['url'], time.time() - t0)
+            logger.info(info)
+        except Exception as e:
+            logger.exception(e)
+            time.sleep(3)
 
 
 if __name__ == '__main__':
