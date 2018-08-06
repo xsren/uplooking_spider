@@ -5,6 +5,7 @@ import threading
 import time
 
 import requests
+from api_handler import get_task, update_task, insert_data
 from mongo_handler import get_db
 
 db = get_db()
@@ -83,9 +84,8 @@ def crawl_song(t, t_num):
             else:
                 song['mus_Lyric'] = ''
 
-            if not db['song_info'].find_one({'url': song['url']}):
-                db['song_info'].insert_one(song)
-            db['song_task'].update_one({'url': t['url']}, {'$set': {'status': 2}})
+            insert_data('song_info', song, logger)
+            update_task('song_task', t, 2, logger)
             return
         except Exception as e:
             info = 't_num:%s,url:%s, error:%s' % (t['url'], str(e), t_num)
@@ -93,14 +93,13 @@ def crawl_song(t, t_num):
             logger.exception(e)
             time.sleep(1)
 
-    db['song_task'].update_one({'url': t['url']}, {'$set': {'status': 3}})
+    update_task('song_task', t, 3, logger)
 
 
 def run_spider(t_num):
     while True:
         try:
-            task = db['song_task'].find_and_modify({'status': 0}, {'$set': {'status': 1}})
-
+            task = get_task('song_task', logger)
             if not task:
                 logger.info('t_num:{},finish crawl all task'.format(t_num))
                 return
@@ -116,7 +115,7 @@ def run_spider(t_num):
 
 def run():
     threads = []
-    thread_num = 10
+    thread_num = 1
     for i in range(thread_num):
         t1 = threading.Thread(target=run_spider, args=(i,))
         threads.append(t1)

@@ -1,7 +1,7 @@
 # coding:utf8
 import json
 import logging
-import re
+import threading
 import time
 
 import requests
@@ -13,16 +13,14 @@ logging.basicConfig()
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
-formatter = logging.Formatter('%(name)-12s %(asctime)s %(levelname)-8s %(message)s', '%a, %d %b %Y %H:%M:%S',)
+formatter = logging.Formatter('%(name)-12s %(asctime)s %(levelname)-8s %(message)s', '%a, %d %b %Y %H:%M:%S', )
 file_handler = logging.FileHandler("qq_song.log")
 file_handler.setFormatter(formatter)
 
 logger.addHandler(file_handler)
 
 
-
-
-def crawl_song(t):
+def crawl_song(t, t_num):
     try_times = 3
     while try_times > 0:
         try_times -= 1
@@ -90,7 +88,7 @@ def crawl_song(t):
             db['song_task'].update_one({'url': t['url']}, {'$set': {'status': 2}})
             return
         except Exception as e:
-            info = 'url:%s, error:%s' % (t['url'], str(e))
+            info = 't_num:%s,url:%s, error:%s' % (t['url'], str(e), t_num)
             logger.info(info)
             logger.exception(e)
             time.sleep(1)
@@ -98,23 +96,36 @@ def crawl_song(t):
     db['song_task'].update_one({'url': t['url']}, {'$set': {'status': 3}})
 
 
-def run():
+def run_spider(t_num):
     while True:
         try:
             task = db['song_task'].find_and_modify({'status': 0}, {'$set': {'status': 1}})
 
             if not task:
-                logger.info('finish crawl all task')
+                logger.info('t_num:{},finish crawl all task'.format(t_num))
                 return
 
-
             t0 = time.time()
-            crawl_song(task)
-            info = "finish crawl url:%s, t_diff:%s" % (task['url'], time.time() - t0)
+            crawl_song(task, t_num)
+            info = "t_num:%s, finish crawl url:%s, t_diff:%s" % (t_num, task['url'], time.time() - t0)
             logger.info(info)
         except Exception as e:
             logger.exception(e)
             time.sleep(3)
+
+
+def run():
+    threads = []
+    thread_num = 10
+    for i in range(thread_num):
+        t1 = threading.Thread(target=run_spider, args=(i,))
+        threads.append(t1)
+
+    for t in threads:
+        t.start()
+
+    for t in threads:
+        t.join()
 
 
 if __name__ == '__main__':
