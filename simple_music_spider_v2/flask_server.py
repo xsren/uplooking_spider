@@ -1,10 +1,48 @@
+import threading
+import time
+import traceback
+from queue import Queue
+
 from flask import Flask, request, jsonify
 from mongo_handler import get_db
+from pymongo import InsertOne
 
 db = get_db()
 
 app = Flask(__name__)
 
+insert_data_queue = Queue(maxsize=100)
+
+get_task_queue = Queue()
+
+
+def handle_insert_data():
+    print('start handle_insert_data')
+    while True:
+        try:
+            ds = {}
+            while insert_data_queue.qsize() > 0:
+                try:
+                    coll, data = insert_data_queue.get_nowait()
+                    insert_data_queue.task_done()
+                except Exception as e:
+                    break
+                if coll in ds:
+                    ds[coll].append(InsertOne(data))
+                else:
+                    ds[coll] = [InsertOne(data)]
+            print(ds)
+            for coll, datas in ds.items():
+                db[coll].bulk_write(datas)
+            time.sleep(10)
+        except Exception as e:
+            trace = traceback.format_exc()
+            info = 'error:{},trace:{}'.format(str(e), trace)
+            print(info)
+
+
+t = threading.Thread(target=handle_insert_data, args=())
+t.start()
 
 @app.route('/')
 def hello_world():
@@ -17,8 +55,10 @@ def insert_data():
     print(rj)
     coll_name = rj['coll_name']
     data = rj['data']
+
     if not db[coll_name].find_one({'url': data['url']}):
-        db[coll_name].insert_one(data)
+        insert_data_queue.put((coll_name, data))
+        # db[coll_name].insert_one(data)
 
     return 'OK'
 
