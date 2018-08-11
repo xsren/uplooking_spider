@@ -252,7 +252,6 @@ def TestFunc():
     )
     print(URL)
 
-
     data = urllib.urlopen(URL).read()
     fh = open(file_name, 'w')
     fh.write(data)
@@ -270,7 +269,6 @@ def TestFunc():
 
 
     rsp = api.PredictFromFile(pred_type, file_name);
-    print(rsp.pred_rsp.value)
 
     # just_flag = False;
     # if just_flag:
