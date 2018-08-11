@@ -5,7 +5,7 @@ from queue import Queue
 
 from flask import Flask, request, jsonify
 from mongo_handler import get_db
-from pymongo import InsertOne
+from pymongo import InsertOne, UpdateMany
 
 db = get_db()
 
@@ -13,7 +13,7 @@ app = Flask(__name__)
 
 insert_data_queue = Queue(maxsize=100)
 
-get_task_queue = Queue()
+task_queues = {}
 
 
 def handle_insert_data():
@@ -43,6 +43,7 @@ def handle_insert_data():
 
 t = threading.Thread(target=handle_insert_data, args=())
 t.start()
+
 
 @app.route('/')
 def hello_world():
@@ -78,9 +79,22 @@ def insert_task():
 @app.route('/get_task')
 def get_task():
     coll_name = request.args.get('coll_name', None)
-    task = db[coll_name].find_and_modify({'status': 0}, {'$set': {'status': 1}})
+    if coll_name not in task_queues:
+        task_queues[coll_name] = Queue()
+    # task = db[coll_name].find_and_modify({'status': 0}, {'$set': {'status': 1}})
+    if task_queues[coll_name].qsize() <= 0:
+        tasks = db[coll_name].find({'status': 0}).limit(100)
 
-    if not task:
+        requests = []
+        for task in tasks:
+            requests.append(
+                UpdateMany({'url': task["url"]}, {"$set": {"status": 1, "last_crawl_time": 0}}))
+            task_queues[coll_name].put(task)
+        if len(requests) > 0:
+            db[coll_name].bulk_write(requests)
+    try:
+        task = task_queues[coll_name].get_nowait()
+    except:
         task = {}
     task.pop('_id', None)
     return jsonify(task)
