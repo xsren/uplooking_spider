@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Index</title>
+</head>
+<body>
+<h1>共有歌曲：{{data.total}} 首</h1>
+<h1>热门歌曲：</h1>
+<ul>
+    {% for song in data.songs %}
+    <li>
+        <a href="/real_url/{{song.song_id}}">
+            <p>歌曲：{{song.mus_name}} 歌手：{{song.singer}}</p>
+        </a>
+    </li>
+    {% endfor %}
+</ul>
+</body>
+</html>
