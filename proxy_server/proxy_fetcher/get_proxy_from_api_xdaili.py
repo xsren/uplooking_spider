@@ -3,7 +3,6 @@ from gevent import monkey
 
 monkey.patch_all()
 import requests
-import re
 import pymongo
 import gevent
 from gevent import queue
@@ -15,7 +14,6 @@ mongo_url = 'mongodb://127.0.0.1'
 client = pymongo.MongoClient(mongo_url, connect=False)
 db = client["dianping"]
 coll = db["proxys"]
-
 
 sites = []
 
@@ -29,7 +27,7 @@ def get_proxy():
             time.sleep(3)
             return []
         ps = rj['RESULT']
-        print 'get proxy num:%s' % len(ps)
+        print('get proxy num:%s' % len(ps))
         proxies = []
         for p in ps:
             proxy = {
@@ -41,7 +39,7 @@ def get_proxy():
             time.sleep(3)
         return proxies
     except Exception as e:
-        print 'error:%s......' % str(e)
+        print('error:%s......' % str(e))
         time.sleep(3)
         return []
 
@@ -55,7 +53,7 @@ def check_proxy(proxies):
         if p['ip'] not in exists:
             spawns.append(gevent.spawn(baidu_check, p, q))
 
-    print 'new ip num:%s' % len(spawns)
+    print('new ip num:%s' % len(spawns))
 
     # 检查网络可用性
     MAX_CURRENT_NUM = 20
@@ -68,7 +66,7 @@ def check_proxy(proxies):
             gevent.joinall(spawns)
             break
 
-    print time.time() - t0
+    print(time.time() - t0)
 
     ok_ps = []
     while True:
@@ -76,10 +74,10 @@ def check_proxy(proxies):
             p = q.get_nowait()
             ok_ps.append(p)
         except Exception as e:
-            print str(e)
+            print(str(e))
             break
 
-    print 'ok ip num:%s' % len(ok_ps)
+    print('ok ip num:%s' % len(ok_ps))
     return ok_ps
 
 
@@ -117,14 +115,14 @@ def save_proxy(ok_ps):
 
     if len(ns) > 0:
         res = coll.bulk_write(ns)
-        print 'upsert count:%s' % res.upserted_count
+        print('upsert count:%s' % res.upserted_count)
 
 
 def run():
     while True:
         try:
             num = coll.count({'protocol': 0, 'is_ok': 0})
-            print 'now proxy num:%s' % num
+            print('now proxy num:%s' % num)
             if num > 100:
                 time.sleep(3)
             else:
@@ -132,7 +130,7 @@ def run():
                 ok_ps = check_proxy(proxies)
                 save_proxy(ok_ps)
         except Exception as e:
-            print str(e)
+            print(str(e))
             time.sleep(3)
 
 
