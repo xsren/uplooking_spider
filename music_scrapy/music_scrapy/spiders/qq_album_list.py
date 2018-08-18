@@ -28,27 +28,34 @@ def gen_url_and_headers(area, page):
 
 class QqAlbumListSpider(scrapy.Spider):
     name = "qq_album_list"
-    page_limit = 3
+    page_limit = 20000
 
     # allowed_domains = ["y.qq.com"]
     # start_urls = ['http://y.qq.com/']
+    
+    def gen_request(self, area, page, spec_page_limit, try_times):
+        url, headers, callback = gen_url_and_headers(area, page)
+        meta = {
+            'page': page,
+            'area': area,
+            'callback': callback,
+            'spec_page_limit': spec_page_limit,
+            'try_times': try_times,
+        }
+        return scrapy.Request(url=url, headers=headers, callback=self.parse_a, meta=meta)
 
     def start_requests(self):
-        areas = [1, 0, 3, 15, 14, 4]
-        areas = [1]
+        areas = [(1, 3260), (0, 607), (3, 20918), (15, 2363), (14, 540), (4, 232)]
+        # areas = [1]
         page = 0
-        for area in areas:
-            url, headers, callback = gen_url_and_headers(area, page)
-            meta = {
-                'page': page,
-                'area': area,
-                'callback': callback,
-            }
-            yield scrapy.Request(url=url, headers=headers, callback=self.parse_a, meta=meta)
+        for area, spec_page_limit in areas:
+            yield self.gen_request(area, page, spec_page_limit, try_times=0)
 
     def parse_a(self, response):
         area = response.meta['area']
         callback = response.meta['callback']
+        spec_page_limit = response.meta['spec_page_limit']
+        try_times = response.meta['try_times']
         # res = {
         #     'data': response.text,
         #     'area': area,
@@ -61,8 +68,21 @@ class QqAlbumListSpider(scrapy.Spider):
         album_list = rj['albumlib']['data']['list']
         # 判断是否是最后一页
         if len(album_list) == 0:
-            print(' len(album_list) == 0 ...')
-            return
+            if try_times < 5:
+                page = response.meta['page']
+                # url, headers, callback = gen_url_and_headers(area, page)
+                # meta = {
+                #     'page': page,
+                #     'area': area,
+                #     'callback': callback,
+                #     'spec_page_limit': spec_page_limit,
+                #     'try_times': try_times + 1,
+                # }
+                # yield scrapy.Request(url=url, headers=headers, callback=self.parse_a, meta=meta)
+                yield self.gen_request(area, page, spec_page_limit, try_times=try_times + 1)
+            else:
+                print(' len(album_list) == 0 ...')
+                return
         for album in album_list:
             album_task = {
                 'last_crawl_time': 0,
@@ -80,12 +100,6 @@ class QqAlbumListSpider(scrapy.Spider):
             yield res
 
         page = response.meta['page'] + 1
-        if page < self.page_limit:
+        if page < self.page_limit and page <= spec_page_limit:
             # 翻页
-            url, headers, callback = gen_url_and_headers(area, page)
-            meta = {
-                'page': page,
-                'area': area,
-                'callback': callback,
-            }
-            yield scrapy.Request(url=url, headers=headers, callback=self.parse_a, meta=meta)
+            yield self.gen_request(area, page, spec_page_limit, try_times=0)

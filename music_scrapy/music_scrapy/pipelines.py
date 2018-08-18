@@ -6,7 +6,9 @@
 # See: http://doc.scrapy.org/en/latest/topics/item-pipeline.html
 
 from music_scrapy.common.mongo_handler import get_db
-
+from api_handler import insert_task
+import logging
+logger = logging.getLogger()
 
 class MusicScrapyFilePipeline(object):
     def process_item(self, item, spider):
@@ -27,5 +29,10 @@ class MusicScrapyMongodbPipeline(object):
         print("@" * 200)
         coll_name = item['coll_name']
         data = item['data']
-        self.db[coll_name].insert(data)
+        insert_task(coll_name, data, logger)
+
+
+        # data = item['data']
+        # if not self.db[coll_name].find_one({'url': data['url']}):
+        #     self.db[coll_name].insert(data)
         return item
